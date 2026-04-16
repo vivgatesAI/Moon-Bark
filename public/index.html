@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0a0e17">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>MoonBark — AI Dog Communication</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Background Effects -->
+  <div class="ambient-glow"></div>
+  <div class="stars" id="stars"></div>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-content">
+      <div class="brand">
+        <div class="brand-icon">🌙</div>
+        <span class="brand-text">MoonBark</span>
+      </div>
+      <button class="btn-icon" id="settingsBtn" aria-label="Settings">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M12 1v6m0 6v6m4.22-10.22l4.24-4.24M6.34 17.66l-4.24 4.24M23 12h-6m-6 0H1m20.24 4.24l-4.24-4.24M6.34 6.34L2.1 2.1"></path>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Settings Panel -->
+  <aside class="settings-panel" id="settingsPanel">
+    <div class="settings-overlay" id="settingsOverlay"></div>
+    <div class="settings-content">
+      <div class="settings-header">
+        <h2>Settings</h2>
+        <button class="btn-icon" id="closeSettings">✕</button>
+      </div>
+      <div class="settings-body">
+        <div class="form-group">
+          <label>Dog's Name</label>
+          <input type="text" id="dogName" placeholder="e.g. Luna" value="">
+        </div>
+        <div class="form-group">
+          <label>AI Voice</label>
+          <select id="voiceSelect">
+            <option value="am_echo">Echo — Warm & Gentle</option>
+            <option value="am_shimmer" selected>Shimmer — Bright & Playful</option>
+            <option value="am_nova">Nova — Clear & Friendly</option>
+            <option value="am_onyx">Onyx — Deep & Thoughtful</option>
+            <option value="am_fable">Fable — Storyteller</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Venice API Status</label>
+          <div class="api-status" id="apiStatus">
+            <span class="status-dot checking"></span>
+            <span class="status-text">Checking...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main">
+    <!-- Tab: Listen -->
+    <section class="tab" id="tab-listen" data-tab="listen">
+      <div class="hero-section">
+        <div class="hero-visual">
+          <div class="orbit-container">
+            <div class="moon">
+              <img src="assets/hero-dog.png" alt="Cosmic Dog" id="heroImage" class="moon-image">
+            </div>
+            <div class="orbit-ring"></div>
+          </div>
+        </div>
+        <h1 class="hero-title">Speak with your dog</h1>
+        <p class="hero-subtitle">Record their voice and get a beautiful AI interpretation</p>
+      </div>
+
+      <div class="card">
+        <div class="input-group">
+          <label>What would you like to say?</label>
+          <textarea id="humanMessage" rows="2" placeholder="What are you trying to tell me, buddy?"></textarea>
+        </div>
+
+        <div class="recorder">
+          <button class="record-btn" id="recordBtn">
+            <div class="record-btn-inner">
+              <svg class="mic-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3Z"></path>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                <line x1="12" y1="19" x2="12" y2="22"></line>
+              </svg>
+            </div>
+            <span class="record-label">Tap to Record</span>
+          </button>
+
+          <button class="record-btn recording" id="stopBtn" hidden>
+            <div class="record-btn-inner stop">
+              <div class="stop-icon"></div>
+            </div>
+            <span class="record-label">Recording...</span>
+          </button>
+        </div>
+
+        <div class="waveform-container">
+          <canvas id="waveform" width="600" height="100"></canvas>
+          <div class="waveform-placeholder" id="waveformPlaceholder">
+            <span>Tap record to visualize</span>
+          </div>
+        </div>
+
+        <div class="status-bar" id="statusBar">
+          <span class="status-text" id="statusText">Ready to listen</span>
+        </div>
+      </div>
+
+      <div class="card" id="metricsCard" hidden>
+        <h3 class="card-title">Signal Analysis</h3>
+        <div class="metrics" id="metrics">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab: Speak Dog -->
+    <section class="tab" id="tab-speak" data-tab="speak" hidden>
+      <div class="hero-section compact">
+        <h1 class="hero-title">Speak Dog</h1>
+        <p class="hero-subtitle">Translate your words into dog language</p>
+      </div>
+
+      <div class="card">
+        <div class="input-group">
+          <label>Your message</label>
+          <textarea id="barkInput" rows="3" placeholder="I love you so much! Want to go for a walk?"></textarea>
+        </div>
+
+        <button class="btn-primary" id="barkTranslateBtn">
+          <span>🐾</span>
+          <span>Translate to Dog</span>
+        </button>
+
+        <div class="progress-container" id="barkProgress" hidden>
+          <div class="progress-bar">
+            <div class="progress-fill"></div>
+          </div>
+          <span class="progress-text">Generating bark translation...</span>
+        </div>
+      </div>
+
+      <div class="card result-card" id="barkResultCard" hidden>
+        <div class="result-badges">
+          <span class="badge" id="barkEmotionBadge">Happy</span>
+          <span class="badge energy" id="barkEnergyBadge">Energy: 8/10</span>
+        </div>
+        <div class="phonetics-box" id="barkPhoneticsText">
+          Woof woof! Arf arf! Yip yip!
+        </div>
+        <p class="result-desc" id="barkDescription"></p>
+        <div class="audio-player">
+          <audio id="barkAudio" controls></audio>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab: Sounds -->
+    <section class="tab" id="tab-sounds" data-tab="sounds" hidden>
+      <div class="hero-section compact">
+        <h1 class="hero-title">Dog Sounds</h1>
+        <p class="hero-subtitle">Generate custom vocalizations</p>
+      </div>
+
+      <div class="card">
+        <div class="mood-grid">
+          <button class="mood-card" data-mood="happy" data-emoji="🐕">
+            <span class="mood-emoji">🐕</span>
+            <span class="mood-name">Happy Bark</span>
+          </button>
+          <button class="mood-card" data-mood="playful" data-emoji="🎾">
+            <span class="mood-emoji">🎾</span>
+            <span class="mood-name">Playful</span>
+          </button>
+          <button class="mood-card" data-mood="excited" data-emoji="🤩">
+            <span class="mood-emoji">🤩</span>
+            <span class="mood-name">Excited</span>
+          </button>
+          <button class="mood-card" data-mood="calm" data-emoji="😌">
+            <span class="mood-emoji">😌</span>
+            <span class="mood-name">Calm</span>
+          </button>
+          <button class="mood-card" data-mood="curious" data-emoji="🤔">
+            <span class="mood-emoji">🤔</span>
+            <span class="mood-name">Curious</span>
+          </button>
+          <button class="mood-card" data-mood="howl" data-emoji="🌕">
+            <span class="mood-emoji">🌕</span>
+            <span class="mood-name">Howl</span>
+          </button>
+        </div>
+
+        <div class="sound-player" id="soundPlayer" hidden>
+          <div class="sound-visualizer" id="soundVisualizer">
+            <!-- Animated bars -->
+          </div>
+          <audio id="generatedSound" controls></audio>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab: AI Studio -->
+    <section class="tab" id="tab-studio" data-tab="studio" hidden>
+      <div class="hero-section compact">
+        <h1 class="hero-title">AI Studio</h1>
+        <p class="hero-subtitle">Generate images & videos with Venice AI</p>
+      </div>
+
+      <div class="card">
+        <div class="studio-tabs">
+          <button class="studio-tab active" data-studio-tab="image">Image</button>
+          <button class="studio-tab" data-studio-tab="video">Video</button>
+        </div>
+
+        <!-- Image Generation -->
+        <div class="studio-panel active" id="studio-image">
+          <div class="input-group">
+            <label>Describe your image</label>
+            <textarea id="imagePrompt" rows="3" placeholder="A golden retriever sitting under a cosmic moonlit sky, ethereal glow, dreamy atmosphere"></textarea>
+          </div>
+          <div class="model-info">
+            <span class="model-badge">nano-banana-2</span>
+            <span class="model-desc">Fast, high-quality images</span>
+          </div>
+          <button class="btn-primary" id="generateImageBtn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+              <circle cx="8.5" cy="8.5" r="1.5"></circle>
+              <path d="M21 15l-5-5L5 21"></path>
+            </svg>
+            <span>Generate Image</span>
+          </button>
+          <div class="progress-container" id="imageProgress" hidden>
+            <div class="progress-bar"><div class="progress-fill"></div></div>
+            <span class="progress-text">Creating with nano-banana-2...</span>
+          </div>
+          <div class="generated-media" id="generatedImageContainer" hidden>
+            <img id="generatedImage" alt="AI Generated">
+            <button class="btn-secondary" id="downloadImageBtn">Download</button>
+          </div>
+        </div>
+
+        <!-- Video Generation -->
+        <div class="studio-panel" id="studio-video">
+          <div class="input-group">
+            <label>Describe your video</label>
+            <textarea id="videoPrompt" rows="3" placeholder="A dog running through a magical forest, cinematic lighting, slow motion"></textarea>
+          </div>
+          <div class="input-row">
+            <div class="input-group">
+              <label>Duration</label>
+              <select id="videoDuration">
+                <option value="4">4 seconds</option>
+                <option value="5" selected>5 seconds</option>
+                <option value="6">6 seconds</option>
+                <option value="8">8 seconds</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label>Aspect</label>
+              <select id="videoAspect">
+                <option value="1:1">1:1 Square</option>
+                <option value="16:9">16:9 Wide</option>
+                <option value="9:16" selected>9:16 Vertical</option>
+              </select>
+            </div>
+          </div>
+          <div class="model-info">
+            <span class="model-badge">wan-2.2</span>
+            <span class="model-desc">Text-to-video generation</span>
+          </div>
+          <button class="btn-primary" id="generateVideoBtn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+            <span>Generate Video</span>
+          </button>
+          <div class="progress-container" id="videoProgress" hidden>
+            <div class="progress-bar"><div class="progress-fill indeterminate"></div></div>
+            <span class="progress-text" id="videoProgressText">Queueing...</span>
+          </div>
+          <div class="generated-media" id="generatedVideoContainer" hidden>
+            <video id="generatedVideo" controls loop></video>
+            <button class="btn-secondary" id="downloadVideoBtn">Download</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab: Reply -->
+    <section class="tab" id="tab-reply" data-tab="reply" hidden>
+      <div class="hero-section compact">
+        <h1 class="hero-title">Dog's Reply</h1>
+        <p class="hero-subtitle">Your dog's translated message</p>
+      </div>
+
+      <div class="card empty-state" id="replyEmptyState">
+        <div class="empty-icon">🐾</div>
+        <h3>No reply yet</h3>
+        <p>Go to the Listen tab and record your dog's voice to get a reply!</p>
+      </div>
+
+      <div class="card reply-card" id="replyContent" hidden>
+        <div class="reply-quote" id="replyText">
+          "I'm here and I love you too!"
+        </div>
+        <div class="reply-audio">
+          <audio id="replyAudio" controls></audio>
+        </div>
+        <div class="reply-details">
+          <div class="detail-item">
+            <span class="detail-label">Intent</span>
+            <span class="detail-value" id="intentText">Affectionate greeting</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Advice</span>
+            <span class="detail-value" id="adviceText">Give them attention and affection</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" data-nav="listen">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3Z"></path>
+        <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+      </svg>
+      <span>Listen</span>
+    </button>
+    <button class="nav-item" data-nav="speak">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+      </svg>
+      <span>Speak</span>
+    </button>
+    <button class="nav-item" data-nav="sounds">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M9 18V5l12-2v13"></path>
+        <circle cx="6" cy="18" r="3"></circle>
+        <circle cx="18" cy="16" r="3"></circle>
+      </svg>
+      <span>Sounds</span>
+    </button>
+    <button class="nav-item" data-nav="studio">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+        <path d="M21 15l-5-5L5 21"></path>
+      </svg>
+      <span>Studio</span>
+    </button>
+    <button class="nav-item" data-nav="reply">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+      </svg>
+      <span>Reply</span>
+    </button>
+  </nav>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
