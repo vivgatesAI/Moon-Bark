@@ -1,7 +1,11 @@
 {
   "name": "moonbark",
   "version": "0.1.0",
+  "description": "MoonBark — Venice-powered dog voice translator and companion",
   "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
     "start": "node server.mjs",
     "dev": "node server.mjs",
